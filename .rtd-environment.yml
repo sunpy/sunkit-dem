@@ -1,0 +1,13 @@
+name: sunkit-dem
+
+channels:
+    - conda-forge
+
+dependencies:
+    - python>=3.7
+    - sunpy
+    - Cython
+    - matplotlib
+    - numpy
+   - pip:
+       - sunpy-sphinx-theme
