@@ -15,9 +15,12 @@ __minimum_python_version__ = "3.7"
 class UnsupportedPythonError(Exception):
     pass
 
+
 if sys.version_info < tuple((int(val) for val in __minimum_python_version__.split('.'))):
     raise UnsupportedPythonError("sunkit-dem does not support Python < {}".format(__minimum_python_version__))
 
+
 if not _ASTROPY_SETUP_:
     # For egg_info test builds to pass, put package imports here.
-    from .example_mod import *
+    from .base_model import GenericModel
+    from .model_factory import Model
