@@ -16,7 +16,7 @@ conf = ConfigParser()
 conf.read(['setup.cfg'])
 metadata = dict(conf.items('metadata'))
 
-PACKAGENAME = metadata.get('package_name', 'sunkit-dem')
+PACKAGENAME = metadata.get('package_name', 'sunkit_dem')
 DESCRIPTION = metadata.get('description', 'A package for computing solar differential emission measure distributions')
 AUTHOR = metadata.get('author', 'SunPy Developers')
 AUTHOR_EMAIL = metadata.get('author_email', '')
