@@ -32,7 +32,9 @@ class GenericModel(BaseModel):
         Each entry should be an `~astropy.units.Quantity` with a key that denotes
         the wavelength
     temperature : `~astropy.units.Quantity`
-        Temperature bins over which to compute the DEM
+        Temperatures over which the kernels were computed
+    temperature_bin_edges : `~astropy.units.Quantity`
+        Edges of the temperature bins in which the DEM is computed. The rightmost edge is included
     """
 
     _registry = dict()
@@ -51,16 +53,19 @@ class GenericModel(BaseModel):
             cls._registry[cls] = cls.defines_model_for
 
     @u.quantity_input
-    def __init__(self, data, kernel, temperature: u.K, **kwargs):
-        self._temperature = self._validate_temperature(temperature)
+    def __init__(self, data, kernel, temperature: u.K, temperature_bin_edges: u.K, **kwargs):
+        self._temperature = temperature
+        self._temperature_bin_edges = self._validate_temperature_bins(temperature_bin_edges)
         self.data = self._validate_input_data(data)
         self.kernel = self._validate_kernel(kernel)
 
-    def _validate_temperature(self, temperature):
-        delta_log_temperature = np.diff(np.log10(temperature.to(u.K).value))
-        if not all([d == delta_log_temperature[0] for d in delta_log_temperature]):
+    def _validate_temperature_bins(self, temperature_bin_edges):
+        delta_log_temperature = np.diff(np.log10(temperature_bin_edges.to(u.K).value))
+        # NOTE: Very small numerical differences not important
+        # NOTE: This can be removed if we use gWCS to create the resulting DEM cube
+        if not np.allclose(delta_log_temperature, delta_log_temperature[0], atol=1e-10, rtol=0):
             raise ValueError('Temperature must be evenly spaced in log10')
-        return temperature
+        return temperature_bin_edges
 
     def _validate_input_data(self, data):
         """
@@ -81,7 +86,7 @@ class GenericModel(BaseModel):
     def _validate_kernel(self, kernel):
         if len(kernel) != self.data.cube_like_dimensions[0].value:
             raise ValueError('Number of kernels must be equal to length of wavelength dimension.')
-        if not all([k.shape == self.temperature.shape for k in kernel]):
+        if not all([kernel[k].shape == self.temperature.shape for k in kernel]):
             raise ValueError('Temperature and kernels must have the same shape.')
         return kernel
 
@@ -91,13 +96,25 @@ class GenericModel(BaseModel):
         return self._temperature
 
     @property
+    @u.quantity_input
+    def temperature_bin_edges(self) -> u.K:
+        return self._temperature_bin_edges
+
+    @property
+    @u.quantity_input
+    def temperature_bin_centers(self) -> u.K:
+        log_temperature = np.log10(self.temperature_bin_edges.value)
+        log_temperature_centers = (log_temperature[1:] + log_temperature[:-1])/2.
+        return u.Quantity(10.**log_temperature_centers, self.temperature_bin_edges.unit)
+
+    @property
     def wavelength(self):
-        unit = self.data.wcs.to_header()[f'CUNIT{self.data.cube_like_dimensions.shape[0]}']
+        unit = self.data[0].wcs.to_header()[f'CUNIT{self.data.cube_like_dimensions.shape[0]}']
         return u.Quantity(self.data.common_axis_extra_coords['wavelength'], unit)
 
     @property
     def data_matrix(self):
-        return u.Quantity(np.stack([n.data for n in self.data]), self.data[0].unit)
+        return u.Quantity(np.stack([n.data.squeeze() for n in self.data]), self.data[0].unit)
 
     @property
     def kernel_matrix(self):
@@ -105,20 +122,24 @@ class GenericModel(BaseModel):
                           self.kernel[self.wavelength.value[0]].unit)
 
     def fit(self, **kwargs):
-        result = self._model(**kwargs)
+        dem, uncertainty = self._model(**kwargs)
         wcs = self._make_dem_wcs()
         meta = self._make_dem_meta()
-        return ndcube.NDCube(result, wcs, meta=meta)
+        return ndcube.NDCube(dem.value,
+                             wcs,
+                             meta=meta,
+                             unit=dem.unit,
+                             uncertainty=uncertainty.value)
 
     def _make_dem_wcs(self):
         wcs = self.data[0].wcs.to_header()  # This assumes that the WCS for all cubes is the same!
         n_axes = self.data.cube_like_dimensions.shape[0]
         wcs[f'CTYPE{n_axes}'] = 'LOG_TEMPERATURE'
         wcs[f'CUNIT{n_axes}'] = 'K'
-        wcs[f'CDELT{n_axes}'] = np.diff(np.log10(self.temperature.to(u.K).value))[0]
+        wcs[f'CDELT{n_axes}'] = np.diff(np.log10(self.temperature_bin_centers.to(u.K).value))[0]
         wcs[f'CRPIX{n_axes}'] = 1
-        wcs[f'CRVAL{n_axes}'] = np.log10(self.temperature.to(u.K).value)[0]
-        wcs[f'NAXIS{n_axes}'] = self.temperature.shape[0]
+        wcs[f'CRVAL{n_axes}'] = np.log10(self.temperature_bin_centers.to(u.K).value)[0]
+        wcs[f'NAXIS{n_axes}'] = self.temperature_bin_centers.shape[0]
         for i in range(n_axes):
             wcs[f'NAXIS{i+1}'] = int(self.data.cube_like_dimensions[n_axes-1-i].value)
 
