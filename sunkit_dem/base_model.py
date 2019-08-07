@@ -130,11 +130,9 @@ class GenericModel(BaseModel):
         dem, uncertainty = self._model(*args, **kwargs)
         wcs = self._make_dem_wcs()
         meta = self._make_dem_meta()
-        return ndcube.NDCube(dem.value,
-                             wcs,
-                             meta=meta,
-                             unit=dem.unit,
-                             uncertainty=uncertainty.value)
+        # NOTE: Bug in NDData that does not allow passing quantity as uncertainty
+        uncertainty = uncertainty.value if isinstance(uncertainty, u.Quantity) else uncertainty
+        return ndcube.NDCube(dem, wcs, meta=meta, uncertainty=uncertainty)
 
     def _make_dem_wcs(self):
         wcs = self.data[0].wcs.to_header()  # This assumes that the WCS for all cubes is the same!
