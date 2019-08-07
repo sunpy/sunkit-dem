@@ -31,10 +31,9 @@ class GenericModel(BaseModel):
     kernel : `dict`
         Each entry should be an `~astropy.units.Quantity` with a key that denotes
         the wavelength
-    temperature : `~astropy.units.Quantity`
-        Temperatures over which the kernels were computed
     temperature_bin_edges : `~astropy.units.Quantity`
-        Edges of the temperature bins in which the DEM is computed. The rightmost edge is included
+        Edges of the temperature bins in which the DEM is computed. The rightmost edge is included.
+        The kernel is evaluated at the bin centers. The bin widths must be equal in log10.
     """
 
     _registry = dict()
@@ -53,21 +52,39 @@ class GenericModel(BaseModel):
             cls._registry[cls] = cls.defines_model_for
 
     @u.quantity_input
-    def __init__(self, data, kernel, temperature: u.K, temperature_bin_edges: u.K, **kwargs):
-        self._temperature = temperature
-        self._temperature_bin_edges = self._validate_temperature_bins(temperature_bin_edges)
-        self.data = self._validate_input_data(data)
-        self.kernel = self._validate_kernel(kernel)
+    def __init__(self, data, kernel, temperature_bin_edges: u.K, **kwargs):
+        self.temperature_bin_edges = temperature_bin_edges
+        self.data = data
+        self.kernel = kernel
 
-    def _validate_temperature_bins(self, temperature_bin_edges):
+    @property
+    @u.quantity_input
+    def temperature_bin_edges(self) -> u.K:
+        return self._temperature_bin_edges
+
+    @temperature_bin_edges.setter
+    @u.quantity_input
+    def temperature_bin_edges(self, temperature_bin_edges: u.K):
         delta_log_temperature = np.diff(np.log10(temperature_bin_edges.to(u.K).value))
         # NOTE: Very small numerical differences not important
         # NOTE: This can be removed if we use gWCS to create the resulting DEM cube
         if not np.allclose(delta_log_temperature, delta_log_temperature[0], atol=1e-10, rtol=0):
             raise ValueError('Temperature must be evenly spaced in log10')
-        return temperature_bin_edges
+        self._temperature_bin_edges = temperature_bin_edges
 
-    def _validate_input_data(self, data):
+    @property
+    @u.quantity_input
+    def temperature_bin_centers(self) -> u.K:
+        log_temperature = np.log10(self.temperature_bin_edges.value)
+        log_temperature_centers = (log_temperature[1:] + log_temperature[:-1])/2.
+        return u.Quantity(10.**log_temperature_centers, self.temperature_bin_edges.unit)
+
+    @property
+    def data(self) -> ndcube.NDCubeSequence:
+        return self._data
+
+    @data.setter
+    def data(self, data):
         """
         Check that input data is correctly formatted as an `ndcube.NDCubeSequence`
         """
@@ -81,31 +98,19 @@ class GenericModel(BaseModel):
             raise ValueError('The first axis of the sequence must be wavelength.')
         if data._common_axis != 0 or 'wavelength' not in data.common_axis_extra_coords:
             raise ValueError('Zeroth common axis must be wavelength.')
-        return data
+        self._data = data
 
-    def _validate_kernel(self, kernel):
+    @property
+    def kernel(self):
+        return self._kernel
+
+    @kernel.setter
+    def kernel(self, kernel):
         if len(kernel) != self.data.cube_like_dimensions[0].value:
             raise ValueError('Number of kernels must be equal to length of wavelength dimension.')
-        if not all([kernel[k].shape == self.temperature.shape for k in kernel]):
+        if not all([kernel[k].shape == self.temperature_bin_centers.shape for k in kernel]):
             raise ValueError('Temperature and kernels must have the same shape.')
-        return kernel
-
-    @property
-    @u.quantity_input
-    def temperature(self) -> u.K:
-        return self._temperature
-
-    @property
-    @u.quantity_input
-    def temperature_bin_edges(self) -> u.K:
-        return self._temperature_bin_edges
-
-    @property
-    @u.quantity_input
-    def temperature_bin_centers(self) -> u.K:
-        log_temperature = np.log10(self.temperature_bin_edges.value)
-        log_temperature_centers = (log_temperature[1:] + log_temperature[:-1])/2.
-        return u.Quantity(10.**log_temperature_centers, self.temperature_bin_edges.unit)
+        self._kernel = kernel
 
     @property
     def wavelength(self):
@@ -121,8 +126,8 @@ class GenericModel(BaseModel):
         return u.Quantity(np.stack([self.kernel[w].value for w in self.wavelength.value]),
                           self.kernel[self.wavelength.value[0]].unit)
 
-    def fit(self, **kwargs):
-        dem, uncertainty = self._model(**kwargs)
+    def fit(self, *args, **kwargs):
+        dem, uncertainty = self._model(*args, **kwargs)
         wcs = self._make_dem_wcs()
         meta = self._make_dem_meta()
         return ndcube.NDCube(dem.value,
