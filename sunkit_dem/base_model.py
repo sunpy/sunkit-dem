@@ -114,8 +114,8 @@ class GenericModel(BaseModel):
 
     @property
     def wavelength(self):
-        unit = self.data[0].wcs.to_header()[f'CUNIT{self.data.cube_like_dimensions.shape[0]}']
-        return u.Quantity(self.data.common_axis_extra_coords['wavelength'], unit)
+        return u.Quantity(self.data.common_axis_extra_coords['wavelength'],
+                          self.data[0].wcs.wcs.cunit[-1])
 
     @property
     def data_matrix(self):
@@ -132,19 +132,20 @@ class GenericModel(BaseModel):
         meta = self._make_dem_meta()
         # NOTE: Bug in NDData that does not allow passing quantity as uncertainty
         uncertainty = uncertainty.value if isinstance(uncertainty, u.Quantity) else uncertainty
-        return ndcube.NDCube(dem, wcs, meta=meta, uncertainty=uncertainty)
+        return ndcube.NDCube(dem, wcs, meta=meta, uncertainty=uncertainty,
+                             missing_axis=self.data[0].missing_axis)
 
     def _make_dem_wcs(self):
         wcs = self.data[0].wcs.to_header()  # This assumes that the WCS for all cubes is the same!
-        n_axes = self.data.cube_like_dimensions.shape[0]
+        n_axes = self.data[0].wcs.naxis
         wcs[f'CTYPE{n_axes}'] = 'LOG_TEMPERATURE'
         wcs[f'CUNIT{n_axes}'] = 'K'
         wcs[f'CDELT{n_axes}'] = np.diff(np.log10(self.temperature_bin_centers.to(u.K).value))[0]
         wcs[f'CRPIX{n_axes}'] = 1
         wcs[f'CRVAL{n_axes}'] = np.log10(self.temperature_bin_centers.to(u.K).value)[0]
         wcs[f'NAXIS{n_axes}'] = self.temperature_bin_centers.shape[0]
-        for i in range(n_axes):
-            wcs[f'NAXIS{i+1}'] = int(self.data.cube_like_dimensions[n_axes-1-i].value)
+        for i in range(n_axes-1):
+            wcs[f'NAXIS{i+1}'] = self.data[0].wcs._naxis[i]  # FIXME: better way to get this info?
 
         return astropy.wcs.WCS(wcs)
 
