@@ -1,5 +1,5 @@
 """
-Base model classes for DEM models
+Base model class for DEM models
 """
 from abc import ABC, abstractmethod, abstractclassmethod
 import copy
@@ -29,23 +29,24 @@ class GenericModel(BaseModel):
     ----------
     data : `~ndcube.NDCubeSequence`
     kernel : `dict`
-        Each entry should be an `~astropy.units.Quantity` with a key that denotes
-        the wavelength
+        Each entry should be an `~astropy.units.Quantity` with a key that
+        denotes the wavelength
     temperature_bin_edges : `~astropy.units.Quantity`
-        Edges of the temperature bins in which the DEM is computed. The rightmost edge is included.
-        The kernel is evaluated at the bin centers. The bin widths must be equal in log10.
+        Edges of the temperature bins in which the DEM is computed. The
+        rightmost edge is included. The kernel is evaluated at the bin centers.
+        The bin widths must be equal in log10.
     """
 
     _registry = dict()
 
     def __init_subclass__(cls, **kwargs):
         """
-        An __init_subclass__ hook initializes all of the subclasses of a given class.
-        So for each subclass, it will call this block of code on import.
-        This replicates some metaclass magic without the need to be aware of metaclasses.
-        Here we use this to register each subclass in a dict that has the
-        `is_datasource_for` attribute.
-        This is then passed into the Map Factory so we can register them.
+        An __init_subclass__ hook initializes all of the subclasses of a given
+        class. So for each subclass, it will call this block of code on import.
+        This replicates some metaclass magic without the need to be aware of
+        metaclasses. Here we use this to register each subclass in a dict that
+        has the `defines_model_for` attribute. This is then passed into the Map
+        Factory so we can register them.
         """
         super().__init_subclass__(**kwargs)
         if hasattr(cls, 'defines_model_for'):
@@ -67,7 +68,7 @@ class GenericModel(BaseModel):
     def temperature_bin_edges(self, temperature_bin_edges: u.K):
         delta_log_temperature = np.diff(np.log10(temperature_bin_edges.to(u.K).value))
         # NOTE: Very small numerical differences not important
-        # NOTE: This can be removed if we use gWCS to create the resulting DEM cube
+        # NOTE: Can be removed if we use gWCS to create the resulting DEM cube
         if not np.allclose(delta_log_temperature, delta_log_temperature[0], atol=1e-10, rtol=0):
             raise ValueError('Temperature must be evenly spaced in log10')
         self._temperature_bin_edges = temperature_bin_edges
@@ -86,18 +87,17 @@ class GenericModel(BaseModel):
     @data.setter
     def data(self, data):
         """
-        Check that input data is correctly formatted as an `ndcube.NDCubeSequence`
+        Check that input data is correctly formatted as an
+        `ndcube.NDCubeSequence`
         """
         if not isinstance(data, ndcube.NDCubeSequence):
             raise ValueError('Input data must be an NDCubeSequence')
         if not all([hasattr(c, 'unit') for c in data]):
-            raise u.UnitsError('All NDCube objects in NDCubeSequence must have units')
+            raise u.UnitsError('Each NDCube in NDCubeSequence must have units')
         # TODO: check that all WCS are the same, within some tolerance
         # NOTE: not always wavelength? Could be energy, filter wheel, etc.
         if data.cube_like_world_axis_physical_types[0] != 'em.wl':
-            raise ValueError('The first axis of the sequence must be wavelength.')
-        if data._common_axis != 0 or 'wavelength' not in data.common_axis_extra_coords:
-            raise ValueError('Zeroth common axis must be wavelength.')
+            raise ValueError('First axis of sequence must be wavelength.')
         self._data = data
 
     @property
@@ -114,6 +114,7 @@ class GenericModel(BaseModel):
 
     @property
     def wavelength(self):
+        # TODO: handle non-numeric "wavelength" designations
         return u.Quantity(self.data.common_axis_extra_coords['wavelength'],
                           self.data[0].wcs.wcs.cunit[-1])
 
@@ -127,6 +128,16 @@ class GenericModel(BaseModel):
                           self.kernel[self.wavelength.value[0]].unit)
 
     def fit(self, *args, **kwargs):
+        """
+        Apply inversion procedure to data.
+
+        Returns
+        -------
+        dem : `~ndcube.NDCube`
+            Differential emission measure as a function of temperature. The
+            temperature axis is evenly spaced in :math:`\log{T}`. The number
+            of dimensions depend on the input data.
+        """
         dem, uncertainty = self._model(*args, **kwargs)
         wcs = self._make_dem_wcs()
         meta = self._make_dem_meta()
@@ -136,7 +147,8 @@ class GenericModel(BaseModel):
                              missing_axis=self.data[0].missing_axis)
 
     def _make_dem_wcs(self):
-        wcs = self.data[0].wcs.to_header()  # This assumes that the WCS for all cubes is the same!
+        # NOTE: Assumes that WCS for all cubes is the same
+        wcs = self.data[0].wcs.to_header()
         n_axes = self.data[0].wcs.naxis
         wcs[f'CTYPE{n_axes}'] = 'LOG_TEMPERATURE'
         wcs[f'CUNIT{n_axes}'] = 'K'
@@ -145,7 +157,8 @@ class GenericModel(BaseModel):
         wcs[f'CRVAL{n_axes}'] = np.log10(self.temperature_bin_centers.to(u.K).value)[0]
         wcs[f'NAXIS{n_axes}'] = self.temperature_bin_centers.shape[0]
         for i in range(n_axes-1):
-            wcs[f'NAXIS{i+1}'] = self.data[0].wcs._naxis[i]  # FIXME: better way to get this info?
+            # FIXME: better way to get this info than internal var?
+            wcs[f'NAXIS{i+1}'] = self.data[0].wcs._naxis[i]
 
         return astropy.wcs.WCS(wcs)
 
