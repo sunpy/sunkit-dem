@@ -1,15 +1,15 @@
-Documentation
-=============
+sunkit-dem Documentation
+------------------------
 
 This is the documentation for sunkit-dem.
 
-
 .. toctree::
-  :maxdepth: 2
+   :maxdepth: 2
 
-  sunkit-dem/index.rst
+   whatsnew/index
 
-.. note:: The layout of this directory is simply a suggestion.  To follow
-          traditional practice, do *not* edit this page, but instead place
-          all documentation for the package inside ``sunkit-dem/``.
-          You can follow this practice or choose your own layout.
+
+Reference/API
+=============
+
+.. automodapi:: sunkit-dem
