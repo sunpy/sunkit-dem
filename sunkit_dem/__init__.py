@@ -4,4 +4,5 @@ try:
     from .version import __version__
 except ImportError:
     __version__ = "unknown"
-__all__ = []
+from .base_model import GenericModel
+from .model_factory import Model
