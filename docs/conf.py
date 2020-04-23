@@ -69,7 +69,8 @@ intersphinx_mapping = {
     'matplotlib': ('https://matplotlib.org/',
                    (None, 'http://data.astropy.org/intersphinx/matplotlib.inv')),
     'astropy': ('http://docs.astropy.org/en/stable/', None),
-    'sunpy': ('https://docs.sunpy.org/en/stable/', None)}
+    'sunpy': ('https://docs.sunpy.org/en/stable/', None),
+    'ndcube':('https://docs.sunpy.org/projects/ndcube/en/stable/', None)}
 
 # -- Options for HTML output -------------------------------------------------
 
