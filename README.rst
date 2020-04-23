@@ -1,3 +1,6 @@
+sunkit-dem
+===========
+
 A package for computing solar differential emission measure distributions
 -------------------------------------------------------------------------
 
