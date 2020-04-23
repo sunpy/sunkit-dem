@@ -1,22 +1,16 @@
-sunkit-dem
-===========
-
 A package for computing solar differential emission measure distributions
 -------------------------------------------------------------------------
 
-.. image:: http://img.shields.io/badge/powered%20by-SunPy-orange.svg?style=flat 
-    :target: http://www.sunpy.org                                               
-    :alt: Powered by SunPy Badge    
-
-
-
+.. image:: http://img.shields.io/badge/powered%20by-SunPy-orange.svg?style=flat
+    :target: http://www.sunpy.org
+    :alt: Powered by SunPy Badge
 
 License
 -------
 
 This project is Copyright (c) SunPy Developers and licensed under
 the terms of the BSD 3-Clause license. This package is based upon
-the `Astropy package template <https://github.com/astropy/package-template>`_
+the `Openastronomy packaging guide <https://github.com/OpenAstronomy/packaging-guide>`_
 which is licensed under the BSD 3-clause licence. See the licenses folder for
 more information.
 
