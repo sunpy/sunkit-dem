@@ -9,8 +9,12 @@ import astropy.units as u
 import astropy.wcs
 import ndcube
 
+__all__ = ["GenericModel"]
+
 
 class BaseModel(ABC):
+
+    _registry = dict()
 
     @abstractmethod
     def _model(self):
@@ -19,6 +23,19 @@ class BaseModel(ABC):
     @abstractclassmethod
     def defines_model_for(self):
         raise NotImplementedError
+
+    def __init_subclass__(cls, **kwargs):
+        """
+        An __init_subclass__ hook initializes all of the subclasses of a given
+        class. So for each subclass, it will call this block of code on import.
+        This replicates some metaclass magic without the need to be aware of
+        metaclasses. Here we use this to register each subclass in a dict that
+        has the `defines_model_for` attribute. This is then passed into the Map
+        Factory so we can register them.
+        """
+        super().__init_subclass__(**kwargs)
+        if hasattr(cls, 'defines_model_for'):
+            cls._registry[cls] = cls.defines_model_for
 
 
 class GenericModel(BaseModel):
@@ -36,21 +53,6 @@ class GenericModel(BaseModel):
         rightmost edge is included. The kernel is evaluated at the bin centers.
         The bin widths must be equal in log10.
     """
-
-    _registry = dict()
-
-    def __init_subclass__(cls, **kwargs):
-        """
-        An __init_subclass__ hook initializes all of the subclasses of a given
-        class. So for each subclass, it will call this block of code on import.
-        This replicates some metaclass magic without the need to be aware of
-        metaclasses. Here we use this to register each subclass in a dict that
-        has the `defines_model_for` attribute. This is then passed into the Map
-        Factory so we can register them.
-        """
-        super().__init_subclass__(**kwargs)
-        if hasattr(cls, 'defines_model_for'):
-            cls._registry[cls] = cls.defines_model_for
 
     @u.quantity_input
     def __init__(self, data, kernel, temperature_bin_edges: u.K, **kwargs):

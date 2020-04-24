@@ -5,5 +5,5 @@ try:
 except ImportError:
     __version__ = "unknown"
     
-from .base_model import GenericModel
-from .model_factory import Model
+from .base_model import *
+from .model_factory import *
