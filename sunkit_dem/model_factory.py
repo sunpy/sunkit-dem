@@ -5,6 +5,8 @@ from sunpy.util.datatype_factory_base import BasicRegistrationFactory
 
 from .base_model import GenericModel
 
+__all__ = ["Model"]
+
 
 class ModelFactory(BasicRegistrationFactory):
 

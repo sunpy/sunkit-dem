@@ -6,6 +6,8 @@ from astropy.wcs import WCS
 import ndcube
 import astropy.units as u
 
+__all__ = ["quantity_1d_to_sequence"]
+
 
 @u.quantity_input
 def quantity_1d_to_sequence(intensity, wavelength: u.angstrom, uncertainty=None, meta=None):
