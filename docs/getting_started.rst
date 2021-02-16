@@ -2,9 +2,9 @@ Getting Started
 ===============
 
 If you want to help develop sunkit-image, or just want to try out the package, you will need to install it from GitHub.
-The best way to do this is to create a new python virtual environment (either with pipenv or conda):
+The best way to do this is to create a new python virtual environment (either with pipenv or conda).
 
-If you’re using the Anaconda Python distribution (recommended), first create a new environment for sunkit-dem development,
+If you’re using the Anaconda Python distribution (recommended), first create a new environment,
 
 .. code-block:: shell
 
