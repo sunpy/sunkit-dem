@@ -31,7 +31,7 @@ def quantity_1d_to_sequence(intensity, wavelength: u.angstrom, uncertainty=None,
         _ = intensity.to(uncertainty.unit)
     cubes = []
     for j, (i, w) in enumerate(zip(intensity, wavelength)):
-        wcs = {'CTYPE1': 'wavelength',
+        wcs = {'CTYPE1': 'WAVE',
                'CUNIT1': w.unit.to_string(),
                'CDELT1': 1,
                'CRPIX1': 1,
@@ -42,6 +42,5 @@ def quantity_1d_to_sequence(intensity, wavelength: u.angstrom, uncertainty=None,
             WCS(wcs),
             meta=meta,
             uncertainty=uncertainty.value[j, np.newaxis] if uncertainty is not None else None,
-            extra_coords=[('wavelength', 0, [w.value])]
         ))
     return ndcube.NDCubeSequence(cubes, common_axis=0)
