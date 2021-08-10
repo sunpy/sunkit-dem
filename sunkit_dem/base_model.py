@@ -5,6 +5,7 @@ from abc import ABC, abstractmethod, abstractclassmethod
 import copy
 
 import numpy as np
+from astropy.nddata import StdDevUncertainty
 import astropy.units as u
 import astropy.wcs
 import ndcube
@@ -139,12 +140,17 @@ class GenericModel(BaseModel):
             temperature axis is evenly spaced in :math:`\log{T}`. The number
             of dimensions depend on the input data.
         """
-        dem, uncertainty = self._model(*args, **kwargs)
+        dem_dict = self._model(*args, **kwargs)
         wcs = self._make_dem_wcs()
         meta = self._make_dem_meta()
-        # NOTE: Bug in NDData that does not allow passing quantity as uncertainty
-        uncertainty = uncertainty.value if isinstance(uncertainty, u.Quantity) else uncertainty
-        return ndcube.NDCube(dem, wcs, meta=meta, uncertainty=uncertainty,)
+        dem = ndcube.NDCube(dem_dict.pop('dem'),
+                            wcs,
+                            meta=meta,
+                            uncertainty=StdDevUncertainty(dem_dict.pop('uncertainty')))
+        cubes = [('dem', dem),]
+        for k in dem_dict:
+            cubes += [(k, ndcube.NDCube(dem_dict[k], wcs, meta=meta))]
+        return ndcube.NDCollection(cubes, )
 
     def _make_dem_wcs(self):
         # NOTE: Assumes that WCS for all cubes is the same
