@@ -5,7 +5,7 @@ See https://github.com/ianan/demreg/tree/master/python
 import numpy as np
 from numpy import diag
 from numpy.linalg import inv,pinv,svd
-import distributed
+import astropy.units as u
 
 from sunkit_dem.base_model import GenericModel
 
@@ -326,6 +326,7 @@ def demmap_pos(dd,ed,rmatrix,logt,dlogt,glc,reg_tweak=1.0,max_iter=10,rgt_fact=1
     dn_reg=np.zeros([na,nf])
  
     if use_dask:
+        import distributed  # This makes the dependency optional
         client = distributed.get_client()
         
 
