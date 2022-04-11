@@ -3,7 +3,7 @@ default_context:
   module_name: sunkit_dem
   short_description: A package for computing solar differential emission measure distributions
   author_name: SunPy Developers
-  author_email: 
+  author_email:
   license: BSD 3-Clause
   project_url: https://github.com/sunpy/sunkit-dem
   github_repo: sunpy/sunkit-dem
