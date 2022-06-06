@@ -13,7 +13,7 @@ __all__ = ['HK12Model']
 
 
 class HK12Model(GenericModel):
-    
+
     def _model(self, alpha=1.0, increase_alpha=1.5, max_iterations=10, guess=None, use_em_loci=False, use_dask=False):
         errors = np.array([self.data[k].uncertainty.array.squeeze() for k in self._keys]).T
         dem, edem, elogt, chisq, dn_reg = dn2dem_pos(
@@ -41,7 +41,7 @@ class HK12Model(GenericModel):
                 'temperature_errors_upper': T_error_upper,
                 'temperature_errors_lower': T_error_lower,
                 'chi_squared': np.atleast_1d(chisq)}
-        
+
     @classmethod
     def defines_model_for(self, *args, **kwargs):
         return kwargs.get('model') == 'hk12'
@@ -59,14 +59,14 @@ def dn2dem_pos(dn_in,edn_in,tresp,tresp_logt,temps,
     --------------------
 
     dn_in:
-        The dn counts in dn/px/s for each filter is shape nx*ny*nf (nf=number of filters nx,ny = spatial dimensions, 
+        The dn counts in dn/px/s for each filter is shape nx*ny*nf (nf=number of filters nx,ny = spatial dimensions,
         one or both of which can be size 0 for 0d/1d problems. (or nt,nf or nx,nt,nf etc etc to get time series)
     edn_in:
         The error on the dn values in the same units and same dimensions.
     tresp:
         the temperature response matrix size n_tresp by nf
     tresp_logt:
-        the temperatures in log t which the temperature response matrix corresponds to. E.G if your tresp matrix 
+        the temperatures in log t which the temperature response matrix corresponds to. E.G if your tresp matrix
         runs from 5.0 to 8.0 in steps of 0.05 then this is the input to tresp_logt
     temps:
         the temperatures at which to calculate a DEM, array of length nt.
@@ -76,22 +76,22 @@ def dn2dem_pos(dn_in,edn_in,tresp,tresp_logt,temps,
     --------------------
 
     dem_norm0:
-        This is an array of length nt which contains an initial guess of the DEM solution providing a weighting 
-        for the inversion process (L constraint matrix). The actual values of the normalisation 
-        do not matter, only their relative values. 
+        This is an array of length nt which contains an initial guess of the DEM solution providing a weighting
+        for the inversion process (L constraint matrix). The actual values of the normalisation
+        do not matter, only their relative values.
         If no dem_norm0 given then L weighting based on value of gloci (0 is default)
     gloci:
-        If no dem_norm0 given (or dem_norm0 array of 1s) then set gloci 1 or 0 (default 0) to choose weighting for the 
+        If no dem_norm0 given (or dem_norm0 array of 1s) then set gloci 1 or 0 (default 0) to choose weighting for the
         inversion process (L constraint matrix).
         1: uses the min of EM loci curves to weight L.
-        0: uses two reg runs - first with L=diag(1/dT) and DEM result from this used to weight L for second run. 
+        0: uses two reg runs - first with L=diag(1/dT) and DEM result from this used to weight L for second run.
     reg_tweak:
         the initial normalised chisq target.
     max_iter:
         the maximum number of iterations to attempt, code iterates if negative DEM is produced. If max iter is reached before
         a suitable solution is found then the current solution is returned instead (which may contain negative values)
     rgt_fact:
-        the factor by which rgt_tweak increases each iteration. As the target chisq increases there is more flexibility allowed 
+        the factor by which rgt_tweak increases each iteration. As the target chisq increases there is more flexibility allowed
         on the DEM
 
     --------------------
@@ -109,7 +109,7 @@ def dn2dem_pos(dn_in,edn_in,tresp,tresp_logt,temps,
     dn_reg:
         The simulated dn counts, shape nx*ny*nf. This is obtained by multiplying the DEM(T) by the filter response K(f,T) for each channel
         useful for comparing with the initial data.
- 
+
     """
     #create our bin averages:
     logt=([np.mean([(np.log10(temps[i])),np.log10((temps[i+1]))]) for i in np.arange(0,len(temps)-1)])
@@ -118,7 +118,7 @@ def dn2dem_pos(dn_in,edn_in,tresp,tresp_logt,temps,
     nt=len(dlogt)
     logt=(np.array([np.log10(temps[0])+(dlogt[i]*(float(i)+0.5)) for i in np.arange(nt)]))
     #number of DEM entries
-    
+
     #hopefully we can deal with a variety of data, nx,ny,nf
     sze=dn_in.shape
 
@@ -161,7 +161,7 @@ def dn2dem_pos(dn_in,edn_in,tresp,tresp_logt,temps,
         if (np.all(dem_norm0) != None):
             dem0=np.zeros([nx,ny,nt])
             dem0[:,:,:]=dem_norm0
-    
+
     # Set glc to either none or all, based on gloci input (default none/not using)
 # IDL version of code allows selective use of gloci, i.e [1,1,0,0,1,1] to chose 4 of 6 filters for EM loci
 # dem_pix() in demmap_pos.py does allow this, but not sure will work through these wrapper functions
@@ -171,11 +171,11 @@ def dn2dem_pos(dn_in,edn_in,tresp,tresp_logt,temps,
         glc.astype(int)
     else:
         glc=np.zeros(nf)
-        glc.astype(int)      
-        
+        glc.astype(int)
+
     if len(tresp[0,:])!=nf:
         print('Tresp needs to be the same number of wavelengths/filters as the data.')
-    
+
     truse=np.zeros([tresp[:,0].shape[0],nf])
     #check the tresp has no elements <0
     #replace any it finds with the mimimum tresp from the same filter
@@ -215,7 +215,7 @@ def dn2dem_pos(dn_in,edn_in,tresp,tresp_logt,temps,
 #  Actually doing the DEM calculations
 # *****************************************************
 # Should always be just running the first part of if here as setting dem01d to array of 1s if nothing given
-# So now more a check dimensions of things are correct 
+# So now more a check dimensions of things are correct
     if ( dem0.ndim==dn.ndim ):
         dem01d=np.reshape(dem0,[nx*ny,nt])
         dem1d,edem1d,elogt1d,chisq1d,dn_reg1d=demmap_pos(dn1d,edn1d,rmatrix,logt,dlogt,glc,reg_tweak=reg_tweak,max_iter=max_iter,\
@@ -240,12 +240,12 @@ def demmap_pos(dd,ed,rmatrix,logt,dlogt,glc,reg_tweak=1.0,max_iter=10,rgt_fact=1
     demmap_pos
     computes the dems for a 1 d array of length na with nf filters using the dn (g) counts and the temperature
     response matrix (K) for each filter.
-    where 
+    where
 
         g=K.DEM
 
     Regularized approach solves this via
-  
+
         ||K.DEM-g||^2 + lamb ||L.DEM||^2=min
 
     L is a zeroth order constraint matrix and lamb is the rrgularisation parameter
@@ -260,7 +260,7 @@ def demmap_pos(dd,ed,rmatrix,logt,dlogt,glc,reg_tweak=1.0,max_iter=10,rgt_fact=1
 
     or
 
-        K^-1=K^dag= Sum_i (sva_i/(sva_i^2+svb_i^1*lamb)) * u.w    
+        K^-1=K^dag= Sum_i (sva_i/(sva_i^2+svb_i^1*lamb)) * u.w
 
     We know all the bits of it apart from lamb. We get this from the Discrepancy principle (Morozon, 1967)
     such that the lamb chosen gives a DEM_lamb that produces a specified reduced chisq in data space which
@@ -280,7 +280,7 @@ def demmap_pos(dd,ed,rmatrix,logt,dlogt,glc,reg_tweak=1.0,max_iter=10,rgt_fact=1
     ed
         the error on the dn counts
     rmatrix
-        the trmatrix for each channel 
+        the trmatrix for each channel
     logt
         log of the temperature bin averages
     dlogt
@@ -299,22 +299,22 @@ def demmap_pos(dd,ed,rmatrix,logt,dlogt,glc,reg_tweak=1.0,max_iter=10,rgt_fact=1
         maximum number of times to attempt the gsvd before giving up, returns the last attempt if max_iter reached
     dem_norm0
         provides a "guess" dem as a starting point, if none is supplied one is created.
-    
+
     Outputs
 
-    
+
     dem
         The DEM(T)
     edem
         the error on the DEM(T)
     elogt
-        the error on logt    
+        the error on logt
     chisq
         the chisq for the dem compared to the dn
     dn_reg
-        the simulated dn for each filter for the recovered DEM    
+        the simulated dn for each filter for the recovered DEM
     """
- 
+
     na=dd.shape[0]
     nf=rmatrix.shape[1]
     nt=logt.shape[0]
@@ -324,16 +324,16 @@ def demmap_pos(dd,ed,rmatrix,logt,dlogt,glc,reg_tweak=1.0,max_iter=10,rgt_fact=1
     elogt=np.zeros([na,nt])
     chisq=np.zeros([na])
     dn_reg=np.zeros([na,nf])
- 
+
     if use_dask:
         import distributed  # This makes the dependency optional
         client = distributed.get_client()
-        
+
 
         def run_dem_pix(i, data=None, errors=None, dem_norm=None, resp_matrix=None, log_temp=None, delta_log_temp=None):
-            return dem_pix(data[i,:], errors[i,:], resp_matrix, log_temp, delta_log_temp, glc, 
+            return dem_pix(data[i,:], errors[i,:], resp_matrix, log_temp, delta_log_temp, glc,
                            reg_tweak=reg_tweak, max_iter=max_iter, rgt_fact=rgt_fact, dem_norm0=dem_norm[i,:])
-        
+
 
         dd_scatter = client.scatter(dd)
         ed_scatter = client.scatter(ed)
@@ -342,8 +342,8 @@ def demmap_pos(dd,ed,rmatrix,logt,dlogt,glc,reg_tweak=1.0,max_iter=10,rgt_fact=1
         logt_scatter = client.scatter(logt)
         dlogt_scatter = client.scatter(dlogt)
         futures = client.map(run_dem_pix, range(na),
-                             data=dd_scatter, 
-                             errors=ed_scatter, 
+                             data=dd_scatter,
+                             errors=ed_scatter,
                              dem_norm=dem_norm_scatter,
                              resp_matrix=rmatrix_scatter,
                              log_temp=logt_scatter,
@@ -357,7 +357,7 @@ def demmap_pos(dd,ed,rmatrix,logt,dlogt,glc,reg_tweak=1.0,max_iter=10,rgt_fact=1
             chisq[i] = r[3]
             dn_reg[i,:] = r[4]
     #else we execute in serial
-    else:   
+    else:
         for i in range(na):
             result=dem_pix(dd[i,:],ed[i,:],rmatrix,logt,dlogt,glc, \
                 reg_tweak=reg_tweak,max_iter=max_iter,rgt_fact=rgt_fact,dem_norm0=dem_norm0[i,:])
@@ -392,7 +392,7 @@ def dem_unwrap(dn,ed,rmatrix,logt,dlogt,glc,reg_tweak=1.0,max_iter=10,rgt_fact=1
 
 
 def dem_pix(dnin,ednin,rmatrix,logt,dlogt,glc,reg_tweak=1.0,max_iter=10,rgt_fact=1.5,dem_norm0=0):
-    
+
     nf=rmatrix.shape[1]
     nt=logt.shape[0]
     nmu=42
@@ -404,8 +404,8 @@ def dem_pix(dnin,ednin,rmatrix,logt,dlogt,glc,reg_tweak=1.0,max_iter=10,rgt_fact
     dn_reg=np.zeros(nf)
 
     rmatrixin=np.zeros([nt,nf])
-    filt=np.zeros([nf,nt])  
-    
+    filt=np.zeros([nf,nt])
+
     for kk in np.arange(nf):
         #response matrix
         rmatrixin[:,kk]=rmatrix[:,kk]/ednin[kk]
@@ -420,7 +420,7 @@ def dem_pix(dnin,ednin,rmatrix,logt,dlogt,glc,reg_tweak=1.0,max_iter=10,rgt_fact
         L=np.zeros([nt,nt])
 
         test_dem_reg=(np.zeros(1)).astype(int)
-        
+
 #  If you have supplied an initial guess/constraint normalized DEM then don't
 #  need to calculate one (either from L=1/sqrt(dLogT) or min of EM loci)
 
@@ -442,7 +442,7 @@ def dem_pix(dnin,ednin,rmatrix,logt,dlogt,glc,reg_tweak=1.0,max_iter=10,rgt_fact
                 for ttt in np.arange(nt):
                     dem_model[ttt]=np.min(emloci[ttt,np.nonzero(emloci[ttt,:])])
                 dem_reg_lwght=dem_model
-#                ~~~~~~~~~~~~~~~~~ 
+#                ~~~~~~~~~~~~~~~~~
 #             2. Or if nothing selected will run reg once, and use solution as weighting (self norm appraoch)
             else:
                 # Calculate the initial constraint matrix
@@ -462,34 +462,34 @@ def dem_pix(dnin,ednin,rmatrix,logt,dlogt,glc,reg_tweak=1.0,max_iter=10,rgt_fact
                 mask=np.where(dr0 > 0) and (dr0 > fcofmax*np.max(dr0))
                 dem_reg_lwght=np.ones(nt)
                 dem_reg_lwght[mask]=dr0[mask]
-#                ~~~~~~~~~~~~~~~~~ 
+#                ~~~~~~~~~~~~~~~~~
 #            Just smooth these inital dem_reg_lwght and max sure no value is too small
-#             dem_reg_lwght=(np.convolve(dem_reg_lwght,np.ones(3)/3))[1:-1]/np.max(dem_reg_lwght[:])     
-            dem_reg_lwght=(np.convolve(dem_reg_lwght[1:-1],np.ones(5)/5))[1:-1]/np.max(dem_reg_lwght[:])       
+#             dem_reg_lwght=(np.convolve(dem_reg_lwght,np.ones(3)/3))[1:-1]/np.max(dem_reg_lwght[:])
+            dem_reg_lwght=(np.convolve(dem_reg_lwght[1:-1],np.ones(5)/5))[1:-1]/np.max(dem_reg_lwght[:])
             dem_reg_lwght[dem_reg_lwght<=1e-8]=1e-8
         else:
-#             Otherwise just set dem_reg to inputted weight   
+#             Otherwise just set dem_reg to inputted weight
             dem_reg_lwght=dem_norm0
 
-    
+
 #          Now actually do the dem regularisation using the L weighting from above
 #  If set max_iter to 1 then wont have the pos constraint? As need following to run at least once
         while((ndem > 0) and (piter < max_iter)):
             #make L from 1/dem reg scaled by dlogt and diagonalise
-            L=np.diag(np.sqrt(dlogt)/np.sqrt(abs(dem_reg_lwght))) 
+            L=np.diag(np.sqrt(dlogt)/np.sqrt(abs(dem_reg_lwght)))
             #call gsvd and reg map
             sva,svb,U,V,W = dem_inv_gsvd(rmatrixin.T,L)
             lamb=dem_reg_map(sva,svb,U,W,dn,edn,rgt,nmu)
             for kk in np.arange(nf):
                 filt[kk,kk]=(sva[kk]/(sva[kk]**2+svb[kk]**2*lamb))
             kdag=W@(filt.T@U[:nf,:nf])
-    
+
             dem_reg_out=(kdag@dn).squeeze()
 
             ndem=len(dem_reg_out[dem_reg_out < 0])
             rgt=rgt_fact*rgt
             piter+=1
-      
+
         dem=dem_reg_out
 
         #work out the theoretical dn and compare to the input dn
@@ -506,7 +506,7 @@ def dem_pix(dnin,ednin,rmatrix,logt,dlogt,glc,reg_tweak=1.0,max_iter=10,rgt_fact
 
         elogt=np.zeros(nt)
         for kk in np.arange(nt):
-            rr=np.interp(ltt,logt,kdagk[:,kk])               
+            rr=np.interp(ltt,logt,kdagk[:,kk])
             hm_mask=(rr >= max(kdagk[:,kk])/2.)
             elogt[kk]=dlogt[kk]
             if (np.sum(hm_mask) > 0):
@@ -518,22 +518,22 @@ def dem_reg_map(sigmaa,sigmab,U,W,data,err,reg_tweak,nmu=500):
     """
     dem_reg_map
     computes the regularisation parameter
-    
+
     Inputs
 
-    sigmaa: 
+    sigmaa:
         gsv vector
-    sigmab: 
+    sigmab:
         gsv vector
-    U:      
+    U:
         gsvd matrix
-    V:      
+    V:
         gsvd matrix
-    data:   
+    data:
         dn data
-    err:    
+    err:
         dn error
-    reg_tweak: 
+    reg_tweak:
         how much to adjust the chisq each iteration
 
     Outputs
@@ -542,7 +542,7 @@ def dem_reg_map(sigmaa,sigmab,U,W,data,err,reg_tweak,nmu=500):
         regularization paramater
 
     """
- 
+
 
     nf=data.shape[0]
     nreg=sigmaa.shape[0]
@@ -560,9 +560,9 @@ def dem_reg_map(sigmaa,sigmab,U,W,data,err,reg_tweak,nmu=500):
         coef=data@U[kk,:]-sigmaa[kk]
         for ii in np.arange(nmu):
             arg[kk,ii]=(mu[ii]*sigmab[kk]**2*coef/(sigmaa[kk]**2+mu[ii]*sigmab[kk]**2))**2
-    
+
     discr=np.sum(arg,axis=0)-np.sum(err**2)*reg_tweak
-  
+
     opt=mu[np.argmin(np.abs(discr))]
 
     return opt
@@ -602,9 +602,9 @@ def dem_inv_gsvd(A,B):
         the vector of the diagonal values of SA
     beta:
         the vector of the diagonal values of SB
-  
 
-    """  
+
+    """
     #calculate the matrix A*B^-1
     AB1=A@inv(B)
     sze=AB1.shape
