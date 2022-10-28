@@ -5,6 +5,7 @@ import numpy as np
 from astropy.wcs import WCS
 import ndcube
 import astropy.units as u
+from astropy.nddata import StdDevUncertainty
 
 __all__ = ["quantity_1d_to_sequence"]
 
@@ -26,12 +27,13 @@ def quantity_1d_to_sequence(intensity, wavelength: u.angstrom, uncertainty=None,
         Uncertainties on intensities
     meta : `dict` or `dict`-like, optional
     """
-    if uncertainty is not None:
-        # Raise an error if intensities and uncertainties have incompatible units
-        _ = intensity.to(uncertainty.unit)
     cubes = []
     for j, (i, w) in enumerate(zip(intensity, wavelength)):
-        wcs = {'CTYPE1': 'wavelength',
+        if uncertainty is not None:
+            _uncertainty = StdDevUncertainty(uncertainty.value[j, np.newaxis])
+        else:
+            _uncertainty = None
+        wcs = {'CTYPE1': 'WAVE',
                'CUNIT1': w.unit.to_string(),
                'CDELT1': 1,
                'CRPIX1': 1,
@@ -41,7 +43,6 @@ def quantity_1d_to_sequence(intensity, wavelength: u.angstrom, uncertainty=None,
             i[np.newaxis],
             WCS(wcs),
             meta=meta,
-            uncertainty=uncertainty.value[j, np.newaxis] if uncertainty is not None else None,
-            extra_coords=[('wavelength', 0, [w.value])]
+            uncertainty=_uncertainty,
         ))
     return ndcube.NDCubeSequence(cubes, common_axis=0)
