@@ -58,9 +58,12 @@ class GenericModel(BaseModel):
             cls._registry[cls] = cls.defines_model_for
 
     @u.quantity_input
-    def __init__(self, data, kernel, temperature_bin_edges: u.K, **kwargs):
+    def __init__(self, data, kernel, temperature_bin_edges: u.K, kernel_temperatures=None, **kwargs):
         self.temperature_bin_edges = temperature_bin_edges
         self.data = data
+        self.kernel_temperatures = kernel_temperatures
+        if self.kernel_temperatures is None:
+            self.kernel_temperatures = self.temperature_bin_centers
         self.kernel = kernel
 
     @property
@@ -100,7 +103,7 @@ class GenericModel(BaseModel):
     def kernel(self, kernel):
         if len(kernel) != len(self.data):
             raise ValueError('Number of kernels must be equal to length of wavelength dimension.')
-        if not all([v.shape == self.temperature_bin_centers.shape for _,v in kernel.items()]):
+        if not all([v.shape == self.kernel_temperatures.shape for _, v in kernel.items()]):
             raise ValueError('Temperature bin centers and kernels must have the same shape.')
         self._kernel = kernel
 
