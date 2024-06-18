@@ -1,8 +1,9 @@
 """
 Tests for utilities
 """
-import pytest
 import numpy as np
+import pytest
+
 import astropy.units as u
 
 from sunkit_dem.util import quantity_1d_to_sequence

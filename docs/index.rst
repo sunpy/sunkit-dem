@@ -1,5 +1,6 @@
+************************
 sunkit-dem Documentation
-------------------------
+************************
 
 This is the documentation for sunkit-dem.
 
@@ -7,9 +8,17 @@ This is the documentation for sunkit-dem.
    :maxdepth: 2
 
    whatsnew/index
+   reference/index
 
+Installation
+============
 
-Reference/API
-=============
+If you want to help develop sunkit-image, or just want to try out the package, you will need to install it from GitHub for the time being.
+The best way to do this is to create a new python virtual environment (either with ``pipenv`` or ``conda``).
+Once you have that virtual environment:
 
-.. automodapi:: sunkit-dem
+.. code:: bash
+
+   $ git clone https://github.com/sunpy/sunkit-image.git
+   $ cd sunkit-dem
+   $ pip install -e .
