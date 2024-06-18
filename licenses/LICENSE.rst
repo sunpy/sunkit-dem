@@ -1,4 +1,4 @@
-Copyright (c) 2019, SunPy Developers
+Copyright (c) 2024, SunPy Developers
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
