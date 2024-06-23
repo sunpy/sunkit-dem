@@ -92,9 +92,23 @@ class GenericModel(BaseModel):
         if not isinstance(data, ndcube.NDCollection):
             raise ValueError('Input data must be an NDCollection')
         if not all([hasattr(data[k], 'unit') for k in data]):
-            raise u.UnitsError('Each NDCube in NDCubeSequence must have units')
+            raise u.UnitsError('Each NDCube in NDCollection must have units')
         self._data = data
 
+    @property
+    def combined_mask(self):
+        """
+        Combined mask of all members of ``data``. Will be True if any member is masked.
+        This is propagated to the final DEM result
+        """
+        combined_mask = []
+        for k in self._keys:
+            if self.data[k].mask is not None:
+                combined_mask.append(self.data[k].mask)
+            else:
+                combined_mask.append(np.full(self.data[k].shape, False))
+        return np.any(combined_mask, axis=0)
+        
     @property
     def kernel(self):
         return self._kernel
@@ -109,14 +123,14 @@ class GenericModel(BaseModel):
 
     @property
     def data_matrix(self):
-        return np.stack([self.data[k].data*self.data[k].unit for k in self._keys])
+        return np.stack([self.data[k].data for k in self._keys])
 
     @property
     def kernel_matrix(self):
-        return np.stack([self.kernel[k] for k in self._keys])
+        return np.stack([self.kernel[k].value for k in self._keys])
 
     def fit(self, *args, **kwargs):
-        """
+        r"""
         Apply inversion procedure to data.
 
         Returns
@@ -129,9 +143,13 @@ class GenericModel(BaseModel):
         dem_dict = self._model(*args, **kwargs)
         wcs = self._make_dem_wcs()
         meta = self._make_dem_meta()
-        dem = ndcube.NDCube(dem_dict.pop('dem'),
+        dem_data = dem_dict.pop('dem')
+        mask = np.full(dem_data.shape, False)
+        mask[:,...] = self.combined_mask
+        dem = ndcube.NDCube(dem_data,
                             wcs,
                             meta=meta,
+                            mask=mask,
                             uncertainty=StdDevUncertainty(dem_dict.pop('uncertainty')))
         cubes = [('dem', dem),]
         for k in dem_dict:
