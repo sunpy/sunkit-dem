@@ -75,9 +75,7 @@ class GenericModel(BaseModel):
     @property
     @u.quantity_input
     def temperature_bin_centers(self) -> u.K:
-        log_temperature = np.log10(self.temperature_bin_edges.value)
-        log_temperature_centers = (log_temperature[1:] + log_temperature[:-1])/2.
-        return u.Quantity(10.**log_temperature_centers, self.temperature_bin_edges.unit)
+        return (self.temperature_bin_edges[1:] + self.temperature_bin_edges[:-1])/2.
 
     @property
     def data(self) -> ndcube.NDCollection:
