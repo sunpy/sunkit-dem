@@ -2,7 +2,8 @@
 requires = [
   "setuptools>=62.1",
   "setuptools_scm[toml]>=6.2",
-  "wheel",]
+  "wheel",
+]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -10,7 +11,7 @@ name = "sunkit_dem"
 description = "A package for computing differential emission measures using multiple methods with a common API"
 requires-python = ">=3.10"
 readme = { file = "README.rst", content-type = "text/x-rst" }
-license = { file = "licenses/LICENSE.rst", content-type = "text/plain" }
+license = { file = "licenses/LICENSE.rst" }
 authors = [
   { name = "SunPy Developers", email = "sunpy@googlegroups.com" },
 ]
@@ -44,6 +45,7 @@ zip-safe = false
 include-package-data = true
 
 [tool.setuptools.packages.find]
+include = ["sunkit_dem*"]
 exclude = ["sunkit_dem._dev*"]
 
 [tool.setuptools_scm]
