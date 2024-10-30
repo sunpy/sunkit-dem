@@ -6,12 +6,23 @@
 
 import datetime
 
+from packaging.version import Version
+
 # -- Project information -----------------------------------------------------
 
 # The full version, including alpha/beta/rc tags
 from sunkit_dem import __version__
 
-release = __version__
+_version = Version(__version__)
+version = release = str(_version)
+# Avoid "post" appearing in version string in rendered docs
+if _version.is_postrelease:
+    version = release = _version.base_version
+# Avoid long githashes in rendered Sphinx docs
+elif _version.is_devrelease:
+    version = release = f"{_version.base_version}.dev{_version.dev}"
+is_development = _version.is_devrelease
+is_release = not(_version.is_prerelease or _version.is_devrelease)
 
 project = "sunkit-dem"
 author = "SunPy Developers"
@@ -53,7 +64,7 @@ source_suffix = ".rst"
 master_doc = "index"
 
 # Treat everything in single ` as a Python reference.
-default_role = 'py:obj'
+default_role = "py:obj"
 
 # -- Options for intersphinx extension ---------------------------------------
 
@@ -65,6 +76,21 @@ intersphinx_mapping = {"python": ("https://docs.python.org/", None)}
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 html_theme = "sunpy"
+<<<<<<<
+=======
+
+# Render inheritance diagrams in SVG
+graphviz_output_format = "svg"
+
+graphviz_dot_args = [
+    "-Nfontsize=10",
+    "-Nfontname=Helvetica Neue, Helvetica, Arial, sans-serif",
+    "-Efontsize=10",
+    "-Efontname=Helvetica Neue, Helvetica, Arial, sans-serif",
+    "-Gfontsize=10",
+    "-Gfontname=Helvetica Neue, Helvetica, Arial, sans-serif",
+]
+>>>>>>>
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
