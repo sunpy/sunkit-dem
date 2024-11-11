@@ -33,10 +33,11 @@ tests = [
 docs = [
   "sphinx",
   "sphinx-automodapi",
-  "towncrier",
   "sunpy-sphinx-theme",
-  "sphinx-changelog",
+  "packaging",
+  "sphinx_changelog",
 ]
+
 [project.urls]
 repository = "https://github.com/sunpy/sunkit-dem"
 
