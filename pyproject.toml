@@ -35,7 +35,9 @@ docs = [
   "sphinx-automodapi",
   "sunpy-sphinx-theme",
   "packaging",
+  "sphinx_changelog",
 ]
+
 [project.urls]
 repository = "https://github.com/sunpy/sunkit-dem"
 
