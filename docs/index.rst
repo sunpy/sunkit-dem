@@ -6,6 +6,15 @@ This is the documentation for sunkit-dem.
 
 .. toctree::
    :maxdepth: 2
+<<<<<<<
+=======
+   :caption: Contents:
+
+   whatsnew/index
+
+Indices and tables
+==================
+>>>>>>>
 
    whatsnew/index
    reference/index
