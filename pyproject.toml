@@ -106,7 +106,6 @@ write_to = "sunkit_dem/_version.py"
   name = "Documentation"
   showcontent = true
 
->>>>>>>
   [[tool.towncrier.type]]
   directory = "trivial"
   name = "Internal Changes"
