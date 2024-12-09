@@ -1,6 +1,6 @@
 {
   "template": "git@github.com:sunpy/package-template.git",
-  "commit": "3737aa309d2a695ada046c7868c5683213003f3d",
+  "commit": "5446d70263fff597b33ca7b0833aaeb5f3c3ac59",
   "checkout": null,
   "context": {
     "cookiecutter": {
@@ -9,13 +9,13 @@
       "short_description": "A package for computing differential emission measures using multiple methods with a common API",
       "author_name": "SunPy Developers",
       "author_email": "sunpy@googlegroups.com",
-      "project_url": "https://github.com/sunpy/sunkit-dem",
-      "github_repo": "",
-      "sourcecode_url": "",
+      "project_url": "https://sunpy.org",
+      "github_repo": "sunpy/sunkit-dem",
+      "sourcecode_url": "https://github.com/sunpy/sunkit-dem",
       "download_url": "https://pypi.org/project/sunkit-dem",
-      "documentation_url": "",
-      "changelog_url": "",
-      "issue_tracker_url": "",
+      "documentation_url": "https://docs.sunpy.org/projects/sunkit-dem",
+      "changelog_url": "https://docs.sunpy.org/projects/sunkit-dem/en/stable/whatsnew/changelog.html",
+      "issue_tracker_url": "https://github.com/sunpy/sunkit-dem/issues",
       "license": "BSD 3-Clause",
       "minimum_python_version": "3.10",
       "use_compiled_extensions": "n",
