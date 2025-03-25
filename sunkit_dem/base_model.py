@@ -104,7 +104,7 @@ class GenericModel(BaseModel):
             if self.data[k].mask is not None:
                 combined_mask.append(self.data[k].mask)
             else:
-                combined_mask.append(np.full(self.data[k].shape, False))
+                combined_mask.append(np.full(self.data[k].data.shape, False))
         return np.any(combined_mask, axis=0)
         
     @property
