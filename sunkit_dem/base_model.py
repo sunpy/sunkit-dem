@@ -73,7 +73,7 @@ class GenericModel(BaseModel):
     @property
     @u.quantity_input
     def temperature_bin_centers(self) -> u.K:
-        return (self.temperature_bin_edges[1:] + self.temperature_bin_edges[:-1])/2.
+        return (self.temperature_bin_edges[1:] + self.temperature_bin_edges[:-1])/2
 
     @property
     def data(self) -> ndcube.NDCollection:
