@@ -16,7 +16,7 @@ class ModelFactory(BasicRegistrationFactory):
         for key in self.registry:
             if self.registry[key](*args, **kwargs):
                 WidgetType = key
-        # If no matches, return the defualt model
+        # If no matches, return the default model
         WidgetType = self.default_widget_type if WidgetType is None else WidgetType
         return WidgetType(*args, **kwargs)
 

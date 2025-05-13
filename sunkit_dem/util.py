@@ -1,11 +1,12 @@
 """
 Utility functions
 """
-import numpy as np
-from astropy.wcs import WCS
 import ndcube
+import numpy as np
+
 import astropy.units as u
 from astropy.nddata import StdDevUncertainty
+from astropy.wcs import WCS
 
 __all__ = ["quantity_1d_to_sequence"]
 

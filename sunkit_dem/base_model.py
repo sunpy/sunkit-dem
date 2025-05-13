@@ -1,16 +1,15 @@
 """
 Base model class for DEM models
 """
-from abc import ABC, abstractmethod, abstractclassmethod
-import copy
+from abc import ABC, abstractmethod
 
-import numpy as np
-from astropy.nddata import StdDevUncertainty
-import astropy.units as u
-import astropy.wcs
 import ndcube
-from ndcube.extra_coords.table_coord import QuantityTableCoordinate, MultipleTableCoordinate
+import numpy as np
+from ndcube.extra_coords.table_coord import MultipleTableCoordinate, QuantityTableCoordinate
 from ndcube.wcs.wrappers import CompoundLowLevelWCS
+
+import astropy.units as u
+from astropy.nddata import StdDevUncertainty
 
 __all__ = ["GenericModel"]
 
@@ -21,7 +20,6 @@ class BaseModel(ABC):
     def _model(self):
         raise NotImplementedError
 
-    @abstractclassmethod
     def defines_model_for(self):
         raise NotImplementedError
 
