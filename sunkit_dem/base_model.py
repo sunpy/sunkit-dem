@@ -104,7 +104,7 @@ class GenericModel(BaseModel):
             else:
                 combined_mask.append(np.full(self.data[k].data.shape, False))
         return np.any(combined_mask, axis=0)
-        
+
     @property
     def kernel(self):
         return self._kernel

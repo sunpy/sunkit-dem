@@ -18,7 +18,7 @@ def sequence1d():
 
 
 def test_dimensions(sequence1d):
-    assert all(sequence1d.cube_like_dimensions == [10]*u.pix)
+    assert all(sequence1d.cube_like_shape == [10]*u.pix)
 
 
 def test_common_axis(sequence1d):
