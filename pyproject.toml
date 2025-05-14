@@ -16,8 +16,8 @@ authors = [
   { name = "SunPy Developers", email = "sunpy@googlegroups.com" },
 ]
 dependencies = [
-  "ndcube>=2.2.0",
-  "sunpy>=5.0.0",
+  "ndcube>=2.3.0",
+  "sunpy>=6.0.0",
 ]
 dynamic = ["version"]
 
