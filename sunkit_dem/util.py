@@ -8,11 +8,11 @@ import astropy.units as u
 from astropy.nddata import StdDevUncertainty
 from astropy.wcs import WCS
 
-__all__ = ["quantity_1d_to_sequence"]
+__all__ = ["quantity_1d_to_collection"]
 
 
 @u.quantity_input
-def quantity_1d_to_sequence(intensity, wavelength: u.angstrom, uncertainty=None, meta=None):
+def quantity_1d_to_collection(intensity, wavelength: u.angstrom, uncertainty=None, meta=None):
     """
     Transform 1D `~astropy.units.Quantity` of intensities to a single-axis
     `~ndcube.NDCubeSequence`.
@@ -27,6 +27,11 @@ def quantity_1d_to_sequence(intensity, wavelength: u.angstrom, uncertainty=None,
     uncertainty : `~astrpoy.units.Quantity`, optional
         Uncertainties on intensities
     meta : `dict` or `dict`-like, optional
+
+    Returns
+    -------
+    `~ndcube.NDCollection`
+        Collection of intensities with keys corresponding to ``wavelengths``
     """
     cubes = []
     for j, (i, w) in enumerate(zip(intensity, wavelength)):
@@ -40,10 +45,11 @@ def quantity_1d_to_sequence(intensity, wavelength: u.angstrom, uncertainty=None,
                'CRPIX1': 1,
                'CRVAL1': w.value,
                'NAXIS1': 1}
-        cubes.append(ndcube.NDCube(
+        cube = ndcube.NDCube(
             i[np.newaxis],
             WCS(wcs),
             meta=meta,
             uncertainty=_uncertainty,
-        ))
-    return ndcube.NDCubeSequence(cubes, common_axis=0)
+        )
+        cubes.append((str(w), cube))
+    return ndcube.NDCollection(cubes)
