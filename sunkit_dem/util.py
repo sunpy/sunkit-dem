@@ -30,7 +30,7 @@ def quantity_1d_to_collection(intensity, wavelength: u.angstrom, uncertainty=Non
 
     Returns
     -------
-    : `~ndcube.NDCollection`
+    `~ndcube.NDCollection`
         Collection of intensities with keys corresponding to ``wavelengths``
     """
     cubes = []
