@@ -30,7 +30,7 @@ class GenericModel(BaseModel):
 
     Parameters
     ----------
-    data : `~ndcube.NDCubeSequence`
+    data : `~ndcube.NDCollection`
     kernel : `dict`
         `~astropy.units.Quantity` objects containing the kernels
         of each response. The keys should correspond to those in ``data``.
@@ -76,6 +76,11 @@ class GenericModel(BaseModel):
         return (self.temperature_bin_edges[1:] + self.temperature_bin_edges[:-1])/2
 
     @property
+    @u.quantity_input
+    def temperature_bin_widths(self) -> u.K:
+        return np.diff(self.temperature_bin_edges)
+
+    @property
     def data(self) -> ndcube.NDCollection:
         return self._data
 
@@ -83,7 +88,7 @@ class GenericModel(BaseModel):
     def data(self, data):
         """
         Check that input data is correctly formatted as an
-        `ndcube.NDCubeSequence`
+        `ndcube.NDCollection`
         """
         if not isinstance(data, ndcube.NDCollection):
             raise ValueError('Input data must be an NDCollection')
@@ -122,6 +127,13 @@ class GenericModel(BaseModel):
         return np.stack([self.data[k].data for k in self._keys])
 
     @property
+    def uncertainty_matrix(self):
+        uncertainties = [self.data[k].uncertainty for k in self._keys]
+        if any([_u is None for _u in uncertainties]):
+            return None
+        return np.stack([_u.array for _u in uncertainties])
+
+    @property
     def kernel_matrix(self):
         return np.stack([self.kernel[k].value for k in self._keys])
 
@@ -142,11 +154,14 @@ class GenericModel(BaseModel):
         dem_data = dem_dict.pop('dem')
         mask = np.full(dem_data.shape, False)
         mask[:,...] = self.combined_mask
+        uncertainty = dem_dict.pop('uncertainty', None)
+        if uncertainty is not None:
+            uncertainty = StdDevUncertainty(uncertainty)
         dem = ndcube.NDCube(dem_data,
                             wcs,
                             meta=meta,
                             mask=mask,
-                            uncertainty=StdDevUncertainty(dem_dict.pop('uncertainty')))
+                            uncertainty=uncertainty)
         cubes = [('dem', dem),]
         for k in dem_dict:
             cubes += [(k, ndcube.NDCube(dem_dict[k], wcs, meta=meta))]
