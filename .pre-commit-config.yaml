@@ -1,7 +1,11 @@
 repos:
     # This should be before any formatting hooks like isort
   - repo: https://github.com/astral-sh/ruff-pre-commit
+<<<<<<< ours
     rev: "v0.13.3"
+=======
+    rev: "v0.13.2"
+>>>>>>> theirs
     hooks:
       - id: ruff
         args: ["--fix"]
