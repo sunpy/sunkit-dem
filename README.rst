@@ -1,21 +1,13 @@
-<<<<<<<
-**************
-=======
-A package for computing differential emission measures using multiple methods with a common API
-===============================================================================================
+``sunkit-dem``
+==============
 
-Usage of Generative AI
-----------------------
->>>>>>>
-``sunkit-Dem``
-**************
+A package for computing differential emission measures using multiple methods with a common API
 
 .. warning::
 
     ``sunkit-dem`` is unmaintained and provides minimal functionality for actually computing differential emission measures beyond a framework for implementing such calculations.
     If you are interested in helping to maintain this package or submitting algorithms or interfaces to existing DEM algorithms, please `open an issue <https://github.com/sunpy/sunkit-dem/issues>`_ and/or `get in touch with the SunPy Project <https://sunpy.org/help/>`_.
 
-A package for computing differential emission measures using multiple methods with a common API.
 
 Usage of Generative AI
 ----------------------
