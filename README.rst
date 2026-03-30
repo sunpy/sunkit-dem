@@ -3,11 +3,6 @@
 
 A package for computing differential emission measures using multiple methods with a common API
 
-<<<<<<<
-=======
-Usage of Generative AI
-----------------------
->>>>>>>
 .. warning::
 
     ``sunkit-dem`` is unmaintained and provides minimal functionality for actually computing differential emission measures beyond a framework for implementing such calculations.
