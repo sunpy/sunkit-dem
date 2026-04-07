@@ -1,5 +1,5 @@
 {
-  "template": "git@github.com:sunpy/package-template.git",
+  "template": "https://github.com/sunpy/package-template",
   "commit": "6436220cebd96b3638682023e7149eb78e012fdc",
   "checkout": null,
   "context": {
