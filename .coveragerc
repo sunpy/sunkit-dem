@@ -4,6 +4,8 @@ omit =
   sunkit_dem/*setup_package*
   sunkit_dem/extern/*
   sunkit_dem/version*
+  sunkit_dem/_dev/*
+  */sunkit_dem/_dev/*
   */sunkit_dem/conftest.py
   */sunkit_dem/*setup_package*
   */sunkit_dem/extern/*
