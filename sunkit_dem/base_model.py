@@ -133,11 +133,11 @@ class GenericModel(BaseModel):
         return np.any(combined_mask, axis=0)
 
     @property
-    def kernel(self):
+    def kernel(self) -> dict[str, u.Quantity]:
         return self._kernel
 
     @kernel.setter
-    def kernel(self, kernel):
+    def kernel(self, kernel: dict[str, u.Quantity]):
         if len(kernel) != len(self.data):
             raise ValueError('Number of kernels must be equal to length of wavelength dimension.')
         if not all([v.shape == self.kernel_temperatures.shape for _, v in kernel.items()]):
@@ -145,18 +145,18 @@ class GenericModel(BaseModel):
         self._kernel = kernel
 
     @property
-    def data_matrix(self):
+    def data_matrix(self) -> u.Quantity:
         return np.stack([self.data[k].data for k in self._keys])
 
     @property
-    def uncertainty_matrix(self):
+    def uncertainty_matrix(self) -> u.Quantity:
         uncertainties = [self.data[k].uncertainty for k in self._keys]
         if any([_u is None for _u in uncertainties]):
             return None
         return np.stack([_u.array for _u in uncertainties])
 
     @property
-    def kernel_matrix(self):
+    def kernel_matrix(self) -> u.Quantity:
         return np.stack([self.kernel[k].value for k in self._keys])
 
     def fit(self, *args, **kwargs) -> ndcube.NDCube:
@@ -200,6 +200,6 @@ class GenericModel(BaseModel):
         compound_wcs = CompoundLowLevelWCS(data_wcs, temp_table_coord.wcs, mapping=mapping)
         return compound_wcs
 
-    def _make_dem_meta(self):
+    def _make_dem_meta(self) -> dict:
         # Individual classes should override this if they want specific metadata
         return {}
