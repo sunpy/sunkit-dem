@@ -1,5 +1,5 @@
 """
-Base model class for DEM models
+Base model class for differential emission measure models.
 """
 from abc import ABC, abstractmethod
 
@@ -25,8 +25,8 @@ class BaseModel(ABC):
 
 
 class GenericModel(BaseModel):
-    """
-    Base class for implementing a differential emission measure model
+    r"""
+    Base class for implementing a differential emission measure (DEM) model.
 
     Parameters
     ----------
@@ -37,7 +37,7 @@ class GenericModel(BaseModel):
     temperature_bin_edges : `~astropy.units.Quantity`
         Edges of the temperature bins in which the DEM is computed. The
         rightmost edge is included. The kernel is evaluated at the bin centers.
-        The bin widths must be equal in log10.
+        The bin widths must be equal in :math:`\log_{10}` space.
     """
 
     _registry = dict()
