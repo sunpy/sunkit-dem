@@ -56,7 +56,14 @@ class GenericModel(BaseModel):
             cls._registry[cls] = cls.defines_model_for
 
     @u.quantity_input
-    def __init__(self, data, kernel, temperature_bin_edges: u.K, kernel_temperatures=None, **kwargs):
+    def __init__(
+        self,
+        data: ndcube.NDCollection,
+        kernel: dict[str, u.Quantity],
+        temperature_bin_edges: u.Quantity[u.K],
+        kernel_temperatures=None,
+        **kwargs,
+    ):
         self.temperature_bin_edges = temperature_bin_edges
         self.data = data
         self.kernel_temperatures = kernel_temperatures
