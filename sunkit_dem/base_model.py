@@ -100,7 +100,7 @@ class GenericModel(BaseModel):
         return self._data
 
     @data.setter
-    def data(self, data):
+    def data(self, data: ndcube.NDCollection):
         """
         Check that input data is correctly formatted as an
         `ndcube.NDCollection`
@@ -152,7 +152,7 @@ class GenericModel(BaseModel):
     def kernel_matrix(self):
         return np.stack([self.kernel[k].value for k in self._keys])
 
-    def fit(self, *args, **kwargs):
+    def fit(self, *args, **kwargs) -> ndcube.NDCube:
         r"""
         Apply inversion procedure to data.
 
