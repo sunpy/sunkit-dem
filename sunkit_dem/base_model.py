@@ -80,25 +80,26 @@ class GenericModel(BaseModel):
     @property
     @u.quantity_input
     def temperature_bin_centers(self) -> u.Quantity[u.K]:
-        """
+        r"""
         The temperature at the midpoint of each temperature bin.
 
         Notes
         -----
         The center of each temperature bin is calculated in physical
-        space, not in log space.
+        space, not in :math:`log` space.
         """
         return (self.temperature_bin_edges[1:] + self.temperature_bin_edges[:-1])/2
 
     @property
     @u.quantity_input
     def temperature_bin_widths(self) -> u.Quantity[u.K]:
-        """
+        r"""
         The width of each temperature bin.
 
         Notes
         -----
-        The widths of each bin are calculated in physical space, not in log space.
+        The widths of each bin are calculated in physical space, not in
+        :math:`\log` space.
         """
         return np.diff(self.temperature_bin_edges)
 
