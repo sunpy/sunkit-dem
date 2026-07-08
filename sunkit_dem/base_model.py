@@ -73,11 +73,13 @@ class GenericModel(BaseModel):
     @property
     @u.quantity_input
     def temperature_bin_centers(self) -> u.K:
+    def temperature_bin_centers(self) -> u.Quantity[u.K]:
         return (self.temperature_bin_edges[1:] + self.temperature_bin_edges[:-1])/2
 
     @property
     @u.quantity_input
     def temperature_bin_widths(self) -> u.K:
+    def temperature_bin_widths(self) -> u.Quantity[u.K]:
         return np.diff(self.temperature_bin_edges)
 
     @property
