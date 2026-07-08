@@ -201,6 +201,6 @@ class GenericModel(BaseModel):
         compound_wcs = CompoundLowLevelWCS(data_wcs, temp_table_coord.wcs, mapping=mapping)
         return compound_wcs
 
-    def _make_dem_meta(self) -> dict:
+    def _make_dem_meta(self) -> dict[str, object]:
         # Individual classes should override this if they want specific metadata
         return {}
