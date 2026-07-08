@@ -121,8 +121,8 @@ class GenericModel(BaseModel):
     @property
     def combined_mask(self):
         """
-        Combined mask of all members of ``data``. Will be True if any member is masked.
-        This is propagated to the final DEM result
+        Combined mask of all members of ``data``. Will be `True` if any member is masked.
+        This mask is propagated to the final DEM result.
         """
         combined_mask = []
         for k in self._keys:
