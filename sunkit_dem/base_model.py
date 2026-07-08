@@ -72,7 +72,7 @@ class GenericModel(BaseModel):
         self.kernel = kernel
 
     @property
-    def _keys(self):
+    def _keys(self) -> list[str]:
         # Internal reference for entries in kernel and data
         # This ensures consistent ordering in kernel and data matrices
         return sorted(list(self.kernel.keys()))
