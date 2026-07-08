@@ -1,5 +1,5 @@
 """
-Base model class for DEM models
+Base model class for differential emission measure models.
 """
 from abc import ABC, abstractmethod
 
@@ -25,8 +25,8 @@ class BaseModel(ABC):
 
 
 class GenericModel(BaseModel):
-    """
-    Base class for implementing a differential emission measure model
+    r"""
+    Base class for implementing a differential emission measure (DEM) model.
 
     Parameters
     ----------
@@ -37,7 +37,7 @@ class GenericModel(BaseModel):
     temperature_bin_edges : `~astropy.units.Quantity`
         Edges of the temperature bins in which the DEM is computed. The
         rightmost edge is included. The kernel is evaluated at the bin centers.
-        The bin widths must be equal in log10.
+        The bin widths must be equal in :math:`\log_{10}` space.
     """
 
     _registry = dict()
@@ -56,7 +56,14 @@ class GenericModel(BaseModel):
             cls._registry[cls] = cls.defines_model_for
 
     @u.quantity_input
-    def __init__(self, data, kernel, temperature_bin_edges: u.K, kernel_temperatures=None, **kwargs):
+    def __init__(
+        self,
+        data: ndcube.NDCollection,
+        kernel: dict[str, u.Quantity],
+        temperature_bin_edges: u.Quantity[u.K],
+        kernel_temperatures=None,
+        **kwargs,
+    ):
         self.temperature_bin_edges = temperature_bin_edges
         self.data = data
         self.kernel_temperatures = kernel_temperatures
@@ -65,19 +72,35 @@ class GenericModel(BaseModel):
         self.kernel = kernel
 
     @property
-    def _keys(self):
+    def _keys(self) -> list[str]:
         # Internal reference for entries in kernel and data
         # This ensures consistent ordering in kernel and data matrices
         return sorted(list(self.kernel.keys()))
 
     @property
     @u.quantity_input
-    def temperature_bin_centers(self) -> u.K:
+    def temperature_bin_centers(self) -> u.Quantity[u.K]:
+        r"""
+        The temperature at the midpoint of each temperature bin.
+
+        Notes
+        -----
+        The center of each temperature bin is calculated in physical
+        space, not in :math:`log` space.
+        """
         return (self.temperature_bin_edges[1:] + self.temperature_bin_edges[:-1])/2
 
     @property
     @u.quantity_input
-    def temperature_bin_widths(self) -> u.K:
+    def temperature_bin_widths(self) -> u.Quantity[u.K]:
+        r"""
+        The width of each temperature bin.
+
+        Notes
+        -----
+        The widths of each bin are calculated in physical space, not in
+        :math:`\log` space.
+        """
         return np.diff(self.temperature_bin_edges)
 
     @property
@@ -85,7 +108,7 @@ class GenericModel(BaseModel):
         return self._data
 
     @data.setter
-    def data(self, data):
+    def data(self, data: ndcube.NDCollection):
         """
         Check that input data is correctly formatted as an
         `ndcube.NDCollection`
@@ -99,8 +122,8 @@ class GenericModel(BaseModel):
     @property
     def combined_mask(self):
         """
-        Combined mask of all members of ``data``. Will be True if any member is masked.
-        This is propagated to the final DEM result
+        Combined mask of all members of ``data``. Will be `True` if any member is masked.
+        This mask is propagated to the final DEM result.
         """
         combined_mask = []
         for k in self._keys:
@@ -111,11 +134,11 @@ class GenericModel(BaseModel):
         return np.any(combined_mask, axis=0)
 
     @property
-    def kernel(self):
+    def kernel(self) -> dict[str, u.Quantity]:
         return self._kernel
 
     @kernel.setter
-    def kernel(self, kernel):
+    def kernel(self, kernel: dict[str, u.Quantity]):
         if len(kernel) != len(self.data):
             raise ValueError('Number of kernels must be equal to length of wavelength dimension.')
         if not all([v.shape == self.kernel_temperatures.shape for _, v in kernel.items()]):
@@ -123,21 +146,21 @@ class GenericModel(BaseModel):
         self._kernel = kernel
 
     @property
-    def data_matrix(self):
+    def data_matrix(self) -> u.Quantity:
         return np.stack([self.data[k].data for k in self._keys])
 
     @property
-    def uncertainty_matrix(self):
+    def uncertainty_matrix(self) -> u.Quantity:
         uncertainties = [self.data[k].uncertainty for k in self._keys]
         if any([_u is None for _u in uncertainties]):
             return None
         return np.stack([_u.array for _u in uncertainties])
 
     @property
-    def kernel_matrix(self):
+    def kernel_matrix(self) -> u.Quantity:
         return np.stack([self.kernel[k].value for k in self._keys])
 
-    def fit(self, *args, **kwargs):
+    def fit(self, *args, **kwargs) -> ndcube.NDCube:
         r"""
         Apply inversion procedure to data.
 
@@ -146,7 +169,7 @@ class GenericModel(BaseModel):
         dem : `~ndcube.NDCube`
             Differential emission measure as a function of temperature. The
             temperature axis is evenly spaced in :math:`\log{T}`. The number
-            of dimensions depend on the input data.
+            of dimensions depends on the input data.
         """
         dem_dict = self._model(*args, **kwargs)
         wcs = self._make_dem_wcs()
@@ -178,6 +201,6 @@ class GenericModel(BaseModel):
         compound_wcs = CompoundLowLevelWCS(data_wcs, temp_table_coord.wcs, mapping=mapping)
         return compound_wcs
 
-    def _make_dem_meta(self):
+    def _make_dem_meta(self) -> dict[str, object]:
         # Individual classes should override this if they want specific metadata
         return {}

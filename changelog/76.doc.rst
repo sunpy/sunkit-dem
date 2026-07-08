@@ -1,0 +1,1 @@
+Updated docstrings and type annotations in `sunkit_dem.GenericModel`.
