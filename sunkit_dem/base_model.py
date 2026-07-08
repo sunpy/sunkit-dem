@@ -168,7 +168,7 @@ class GenericModel(BaseModel):
         dem : `~ndcube.NDCube`
             Differential emission measure as a function of temperature. The
             temperature axis is evenly spaced in :math:`\log{T}`. The number
-            of dimensions depend on the input data.
+            of dimensions depends on the input data.
         """
         dem_dict = self._model(*args, **kwargs)
         wcs = self._make_dem_wcs()
